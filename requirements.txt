@@ -1,0 +1,6 @@
+google-genai
+langgraph
+chromadb
+python-dotenv
+streamlit
+pysqlite3-binary
