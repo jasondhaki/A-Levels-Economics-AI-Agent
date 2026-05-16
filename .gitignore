@@ -3,17 +3,22 @@ venv/
 __pycache__/
 *.pyc
 
-# Local Database (ChromaDB)
-economics_db/
+# LOCAL DATABASE (REMOVED FOR DEPLOYMENT)
+# We comment this out so the database is pushed to GitHub for the Cloud server to use
+# economics_db/
 
-# Sensitive Data
+# PERSISTENT STORAGE
+# We ignore this so your personal test chats don't end up on the public repo
+chat_history.json
+
+# SENSITIVE DATA
 .env
 j4son_dev_portfolio.md
 
-# OS files
+# OS FILES
 .DS_Store
 Thumbs.db
 
-# Editor folders
+# EDITOR FOLDERS
 .vscode/
 .idea/
