@@ -1,0 +1,19 @@
+# Python environment
+venv/
+__pycache__/
+*.pyc
+
+# Local Database (ChromaDB)
+economics_db/
+
+# Sensitive Data
+.env
+j4son_dev_portfolio.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
