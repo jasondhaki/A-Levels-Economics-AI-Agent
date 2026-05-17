@@ -3,4 +3,5 @@ langgraph
 chromadb
 python-dotenv
 streamlit
+pypdf
 pysqlite3-binary

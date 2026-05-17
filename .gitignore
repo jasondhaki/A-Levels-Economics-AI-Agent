@@ -1,24 +1,7 @@
-# Python environment
 venv/
 __pycache__/
 *.pyc
-
-# LOCAL DATABASE (REMOVED FOR DEPLOYMENT)
-# We comment this out so the database is pushed to GitHub for the Cloud server to use
-# economics_db/
-
-# PERSISTENT STORAGE
-# We ignore this so your personal test chats don't end up on the public repo
-chat_history.json
-
-# SENSITIVE DATA
 .env
 j4son_dev_portfolio.md
-
-# OS FILES
+chat_history.json
 .DS_Store
-Thumbs.db
-
-# EDITOR FOLDERS
-.vscode/
-.idea/
