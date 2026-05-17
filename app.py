@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import json
 import uuid
 from datetime import datetime
 from dotenv import load_dotenv
@@ -8,24 +7,10 @@ from economics_agent import app # Your Agentic Engine
 
 load_dotenv()
 
-# --- 1. SESSION & HISTORY UTILITIES ---
-HISTORY_FILE = "chat_history.json"
-
-def load_history():
-    if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "r") as f:
-            try:
-                return json.load(f)
-            except:
-                return {}
-    return {}
-
-def save_history(history):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=4)
-
+# --- 1. SESSION INITIALIZATION (Private & Isolated) ---
+# We no longer use HISTORY_FILE. Every user gets a fresh, empty dictionary.
 if "history" not in st.session_state:
-    st.session_state.history = load_history()
+    st.session_state.history = {}
 
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
@@ -67,13 +52,14 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("---")
-    st.subheader("🕒 SESSIONS")
+    st.subheader("🕒 SESSIONS (THIS TAB)")
     
+    # Pulled purely from user's current session memory
     sessions = list(st.session_state.history.items())
     sessions.sort(key=lambda x: (not x[1].get("pinned", False), x[1].get("timestamp", "")), reverse=True)
 
     if not sessions:
-        st.info("No saved sessions.")
+        st.info("Sessions are private and cleared on refresh.")
     else:
         for chat_id, data in sessions:
             col1, col2 = st.columns([5, 1])
@@ -84,40 +70,44 @@ with st.sidebar:
                     st.rerun()
             with col2:
                 with st.popover("⋮"):
+                    # RENAME
                     new_name = st.text_input("RENAME", value=data['title'], key=f"ren_{chat_id}")
                     if st.button("💾 SAVE", key=f"save_{chat_id}"):
                         st.session_state.history[chat_id]["title"] = new_name.upper()
-                        save_history(st.session_state.history)
                         st.rerun()
                     
+                    st.markdown("---")
+                    # PIN / UNPIN
                     is_pinned = data.get("pinned", False)
-                    if st.button("📍 UNPIN" if is_pinned else "📌 PIN", key=f"pin_{chat_id}"):
+                    if st.button("📍 UNPIN" if is_pinned else "📌 PIN", key=f"pin_{chat_id}", use_container_width=True):
                         st.session_state.history[chat_id]["pinned"] = not is_pinned
-                        save_history(st.session_state.history)
                         st.rerun()
                     
-                    if st.button("🗑️ DELETE", key=f"del_{chat_id}", type="primary"):
+                    st.markdown("---")
+                    # DELETE
+                    if st.button("🗑️ DELETE", key=f"del_{chat_id}", use_container_width=True, type="primary"):
                         del st.session_state.history[chat_id]
-                        save_history(st.session_state.history)
                         if st.session_state.current_chat_id == chat_id:
                             st.session_state.current_chat_id = None
                         st.rerun()
 
     st.markdown("---")
-    st.markdown("<p class='sidebar-text'>PROPRIETARY ANALYSIS ENGINE</p>", unsafe_allow_html=True)
+    st.markdown("<p class='sidebar-text'>PRIVATE ENCRYPTED ANALYSIS</p>", unsafe_allow_html=True)
 
 # --- 4. MAIN CHAT INTERFACE ---
 st.title("📈 J4SON.DEV ECONOMICS EXPERT")
 st.caption("ADVANCED ANALYSIS ENGINE FOR A-LEVEL STUDENTS")
 
 current_id = st.session_state.current_chat_id
-# Pull messages from session state
+# Pull messages from the user's isolated history
 messages = st.session_state.history.get(current_id, {}).get("messages", []) if current_id else []
 
+# Display current session messages
 for msg in messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
+# User input handling
 prompt = st.chat_input("Ask an Economics question...")
 if "pending_input" in st.session_state:
     prompt = st.session_state.pop("pending_input")
@@ -134,10 +124,12 @@ if prompt:
             "pinned": False
         }
 
+    # Add user message to memory
     st.session_state.history[current_id]["messages"].append({"role": "user", "content": prompt})
     with st.chat_message("user"): 
         st.markdown(prompt)
 
+    # Process through Agentic Engine
     with st.chat_message("assistant"):
         with st.status("🏗️ J4SON.DEV ENGINE: ANALYZING...", expanded=True) as status:
             inputs = {"question": prompt, "iterations": 0}
@@ -156,11 +148,12 @@ if prompt:
             status.update(label="✅ ANALYSIS COMPLETE!", state="complete", expanded=False)
         
         st.markdown(final_answer)
+        # Store answer in memory
         st.session_state.history[current_id]["messages"].append({"role": "assistant", "content": final_answer})
-        save_history(st.session_state.history)
-        st.rerun() # Refresh to ensure Export Feature sees new messages
+        # Force rerun to update sidebar and export feature
+        st.rerun()
 
-# --- 5. EXPORT FEATURE (Restored & Optimized) ---
+# --- 5. EXPORT FEATURE (Privacy-Safe) ---
 if current_id and current_id in st.session_state.history:
     current_messages = st.session_state.history[current_id]["messages"]
     if current_messages:
@@ -179,7 +172,7 @@ if current_id and current_id in st.session_state.history:
         st.download_button(
             label="📄 DOWNLOAD SESSION NOTES (.txt)", 
             data=chat_text, 
-            file_name=f"J4SON_DEV_NOTES_{datetime.now().strftime('%m%d_%H%M')}.txt", 
+            file_name=f"Econ_Notes_{datetime.now().strftime('%m%d_%H%M')}.txt", 
             mime="text/plain",
             use_container_width=True
         )
